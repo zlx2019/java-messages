@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+option java_package = "com.zero.messages.protobuf.message";
+option java_outer_classname = "Message";
+
+
+// 统一通信报文
+message EasyMessage {
+  fixed32 magic = 1;
+  MessageVersion version = 2;
+  MessageType type = 3;
+  uint64 id = 4;
+  uint64 timestamp = 5;
+  oneof payload {
+    EasyRequestMessage request = 6;
+    EasyResponseMessage response = 7;
+  }
+}
+
+/// 节点注册请求
+message OnlineRequest {
+  // 节点ID
+  string node_id = 1;
+  // 分组
+  string group = 2;
+}
+
+message EasyRequestMessage {
+  string client_id = 1;
+}
+
+message EasyResponseMessage {
+  ResponseCode code = 1;
+  string message = 2;
+}
+
+
+// 协议版本
+enum MessageVersion {
+  UNKNOWN_VERSION = 0;
+  V1 = 1;
+  V2 = 2;
+}
+
+/// 消息类型
+enum MessageType {
+  UNKNOWN_TYPE = 0;
+  /// 客户端上线（建立连接后上报节点相关信息）
+  ONLINE = 1;
+  /// 用户认证，（失败原因可能：账号密码不正确、账户没有可用额度）
+  AUTH = 2;
+  /// 用户封禁
+  USER_OFFLINE = 3;
+  /// 心跳消息
+  HEARTBEAT = 4;
+}
+
+
+/// 业务响应码
+enum ResponseCode {
+    // 业务成功
+    SUCCESS_CODE = 0;
+    // 认证失败，账号密码错误
+    AUTH_INVALID_CREDENTIAL = 1;
+    // 认证成功，但是没有可用配额
+    AUTH_INSUFFICIENT_QUOTA = 2;
+}

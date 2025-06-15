@@ -18,7 +18,7 @@ import java.util.*;
 public class SimplePartitionConsumer {
     private static final String TOPIC_NAME = "simple-topic";
     private static final String BOOTSTRAP_SERVERS = "localhost:9092";
-    private static final String GROUP_ID = "advanced-consumer-group";
+    private static final String GROUP_ID = "simple-consumer-group";
     public static void main(String[] args) {
         Properties props = new Properties();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
@@ -31,9 +31,13 @@ public class SimplePartitionConsumer {
         KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);
         try {
             consumer.subscribe(List.of(TOPIC_NAME));
+
+            // 消费特定的分区
+            // TopicPartition part = new TopicPartition("", 0);
+            // consumer.assign(List.of(part));
             while (true) {
+                // 按分区分组消费所有分区的消息
                 ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(1000));
-                // 按分区处理消息
                 for (TopicPartition partition : records.partitions()) {
                     // 取出分区中的消息, 进行消费
                     for (ConsumerRecord<String, String> record : records.records(partition)) {

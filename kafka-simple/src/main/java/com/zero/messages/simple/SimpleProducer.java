@@ -1,14 +1,12 @@
 package com.zero.messages.simple;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.clients.producer.ProducerConfig;
-import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.clients.producer.RecordMetadata;
+import org.apache.kafka.clients.producer.*;
 import org.apache.kafka.common.serialization.StringSerializer;
 
 import java.util.Properties;
 import java.util.Scanner;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Kafka 生产者
@@ -19,7 +17,7 @@ import java.util.Scanner;
 @Slf4j
 public class SimpleProducer {
     private static final String TOPIC_NAME = "simple-topic";
-    private static final String BOOTSTRAP_SERVERS = "localhost:9092";
+    private static final String BOOTSTRAP_SERVERS = "127.0.0.1:19092";
 
     public static void main(String[] args) {
         Properties props = new Properties();
@@ -36,20 +34,36 @@ public class SimpleProducer {
         KafkaProducer<String, String> producer = new KafkaProducer<>(props);
         Scanner scanner = new Scanner(System.in);
         try {
-            int count = 0;
-            while (true) {
-                System.out.print("请输入：");
-                String message = scanner.nextLine();
-                if ("quit".equals(message)) {
-                    break;
-                }
+            TimeUnit.SECONDS.sleep(1);
+            int count = 1000;
+//            while (true) {
+//                System.out.print("请输入：");
+//                String message = scanner.nextLine();
+//                if ("quit".equals(message)) {
+//                    break;
+//                }
+//                // 创建消息Key
+//                String messageKey = "key-" + count;
+//                // 创建消息记录
+//                ProducerRecord<String, String> record = new ProducerRecord<>(TOPIC_NAME, messageKey, message);
+//                // 同步发送消息
+//                RecordMetadata metadata = producer.send(record).get();
+//                log.info("消息发送成功! Topic: {}, Partition: {}, Offset: {}", metadata.topic(), metadata.partition(), metadata.offset());
+//            }
+            for (int i = 0; i < count; i++) {
                 // 创建消息Key
-                String messageKey = "key-" + count;
+                String message = "Hello, world!" + i;
+                String messageKey = "Hello world - key";
                 // 创建消息记录
                 ProducerRecord<String, String> record = new ProducerRecord<>(TOPIC_NAME, messageKey, message);
                 // 同步发送消息
-                RecordMetadata metadata = producer.send(record).get();
-                log.info("消息发送成功! Topic: {}, Partition: {}, Offset: {}", metadata.topic(), metadata.partition(), metadata.offset());
+//                RecordMetadata metadata = producer.send(record).get();
+                producer.send(record, new Callback() {
+                    @Override
+                    public void onCompletion(RecordMetadata metadata, Exception e) {
+                        log.info("消息发送成功! Topic: {}, Partition: {}, Offset: {}", metadata.topic(), metadata.partition(), metadata.offset());
+                    }
+                });
             }
         } catch (Exception e) {
             log.error("发送消息失败", e);
