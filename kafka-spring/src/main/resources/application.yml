@@ -1,0 +1,81 @@
+server:
+  port: 8081
+spring:
+  application:
+    name: kafka-spring-app
+
+  kafka:
+    # kafka 集群节点
+    bootstrap-servers: 127.0.0.1:9092
+    # 客户端唯一标识
+    client-id: ${random.uuid}
+    # 用于扩展未支持的Kafka原生配置
+    properties:
+      aaa: "bbb"
+
+
+    ### 生产者配置
+    producer:
+      # 生产者专用节点（默认继承全局）
+      bootstrap-servers: ${spring.kafka.bootstrap-servers}
+      # 消息Key的序列化器
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      # 消息Value的序列化器
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      # 消息发送失败后的重试次数
+      retries: 3
+      # 消息可靠级别
+      # 0：不等待 ack 响应，效率最高，但是可能存在消息丢失
+      # 1：等待 leader 节点 ack 响应
+      # all：等待所有节点 ack 响应
+      acks: all
+      # 默认批量发送数据大小
+      batch-size: 16384
+      # 生产者缓冲区总大小 32mb
+      buffer-memory: 33554432
+      # 消息压缩类型：none, gzip, snappy, lz4, zstd
+      compression-type: gzip
+
+    ### 消费者配置
+    consumer:
+      bootstrap-servers: ${spring.kafka.bootstrap-servers}
+      # 全局消费组ID，用于负载均衡和偏移量管理.
+      group-id: control-default-group
+
+      # 自动提交ack 间隔时间（通常不会使用自动提交）
+      auto-commit-interval: 5s
+      # 是否开启自动提交
+      enable-auto-commit: false
+
+      # 单次拉取最大记录数
+      max-poll-records: 300
+      # 单词拉取最小数据量
+      fetch-min-size: 1
+
+      # 偏移量出现错误时的重置策略
+      # earliest：从最早的消息开始
+      # latest：从最新的消息开始
+      # none：抛出异常
+      auto-offset-reset: earliest
+
+      # 消息Key的反序列化器
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      # 消息Value反序列化器
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+
+    ### 全局侦听器配置
+    listener:
+      # 设置ack模式为 手动提交（实时提交至kafka）
+      # 确认模式
+      #  - record：每条记录自动ack
+      #  - batch：批量自动ack
+      #  - manual：手动ack
+      #  - manual_immediate：手动ack（立即提交）
+      ack-mode: manual_immediate
+      # 侦听器并发数（不能超过topic 分区数）
+      concurrency: 3
+
+
+
+
+
